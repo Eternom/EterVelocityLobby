@@ -15,7 +15,7 @@ import java.util.Map;
 
 /**
  * Lecture des fichiers YAML du plugin (config, langues) avec SnakeYAML, fourni par Velocity.
- * Les clés imbriquées se lisent avec des points : "lobby.command".
+ * Les clés imbriquées se lisent avec des points : "announce.join".
  */
 public final class YamlFiles {
 
@@ -53,7 +53,7 @@ public final class YamlFiles {
         }
     }
 
-    /** { tab: { header: "..." } } -> { "lobby.command": "..." } ; les listes restent des listes. */
+    /** { announce: { join: "..." } } -> { "announce.join": "..." } ; les listes restent des listes. */
     private static Map<String, Object> flatten(Object root) {
         Map<String, Object> flat = new HashMap<>();
         if (root instanceof Map<?, ?> map) {
