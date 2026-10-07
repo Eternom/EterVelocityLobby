@@ -60,6 +60,8 @@ public class Orchestrator {
     private static final Duration INSTALL_TIMEOUT = Duration.ofMinutes(15);
     private static final Duration START_TIMEOUT = Duration.ofMinutes(5);
     private static final Duration DRY_RUN_REPEAT = Duration.ofMinutes(10);
+    /** Après une création ratée : pause avant de réessayer (base saturée, panel plein...). */
+    private static final Duration CREATE_BACKOFF = Duration.ofMinutes(5);
 
     /** Réglages de config.yml > orchestrator. */
     record Settings(boolean dryRun, String namePrefix, int minimum, int maximum, int capacity, double scaleUpAt,
@@ -92,6 +94,8 @@ public class Orchestrator {
     private volatile List<Release> versionReleases = List.of();
     private long versionCheckedAt;
     private long templateModified;
+    /** Pas de création automatique avant cette heure (pause après un échec). */
+    private volatile long createBlockedUntil;
 
     public Orchestrator(EterVelocityLobby plugin, Config config, Path dataDirectory) {
         this.plugin = plugin;
@@ -211,7 +215,7 @@ public class Orchestrator {
                     settings.minimum(), settings.maximum());
             List<Row> upToDate = active.stream().filter(row -> row.version().equals(version)).toList();
 
-            if (version != null && creating == 0 && upToDate.size() < target && rows.size() < settings.maximum() + settings.minimum()) {
+            if (version != null && creating == 0 && now >= createBlockedUntil && upToDate.size() < target && rows.size() < settings.maximum() + settings.minimum()) {
                 create();
             } else if (upToDate.size() >= target) {
                 // Assez de lobbys à jour : on vide une ancienne version, sinon un lobby en trop vide depuis longtemps
@@ -276,11 +280,14 @@ public class Orchestrator {
                 save(row);
                 logger.info("Lobby {} prêt", name);
             } catch (Exception e) {
-                logger.error("Création du lobby {} ratée : {} (suppression)", name, e.getMessage());
+                createBlockedUntil = System.currentTimeMillis() + CREATE_BACKOFF.toMillis();
+                logger.error("Création du lobby {} ratée : {} (suppression ; prochain essai dans {} min)", name, e.getMessage(),
+                        CREATE_BACKOFF.toMinutes());
                 safeDelete(row);
             }
         } catch (Exception e) {
-            logger.error("Création d'un lobby impossible : {}", e.getMessage());
+            createBlockedUntil = System.currentTimeMillis() + CREATE_BACKOFF.toMillis();
+            logger.error("Création d'un lobby impossible : {} (prochain essai dans {} min)", e.getMessage(), CREATE_BACKOFF.toMinutes());
         }
     }
 
