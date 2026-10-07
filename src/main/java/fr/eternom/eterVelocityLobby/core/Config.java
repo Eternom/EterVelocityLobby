@@ -26,6 +26,18 @@ public class Config {
         return values.get(key) instanceof Boolean bool ? bool : fallback;
     }
 
+    public int getInt(String key, int fallback) {
+        return values.get(key) instanceof Number number ? number.intValue() : fallback;
+    }
+
+    public double getDouble(String key, double fallback) {
+        return values.get(key) instanceof Number number ? number.doubleValue() : fallback;
+    }
+
+    public List<String> getStringList(String key) {
+        return values.get(key) instanceof List<?> list ? list.stream().map(String::valueOf).toList() : List.of();
+    }
+
     /** Clés directement sous section : "animations" -> [logo, dots]. */
     public List<String> getKeys(String section) {
         String prefix = section + ".";

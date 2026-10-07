@@ -12,6 +12,19 @@ lobby:
   # Affiché en arrivant au lobby après une expulsion ; <reason> = la raison donnée par le serveur.
   kicked: "<error>Tu as été renvoyé au lobby : <reset><reason>"
 
+orchestrator:
+  usage: '<error>Utilisation : <accent>/eterlobby <list|status|create|drain> [lobby]'
+  not-ready: "<error>L'orchestrateur n'est pas prêt (voir la console du proxy)."
+  creating: "<info>Création d'un lobby lancée (quelques minutes, suivie dans la console)."
+  draining: "<info>Lobby <accent><lobby></accent> vidé : supprimé une fois vide."
+  unknown: "<error>Lobby actif inconnu : <accent><lobby>"
+  list-empty: "<info>Aucun lobby géré par l'orchestrateur."
+  list-header: "<info>Lobbys gérés : <accent><count>"
+  list-line: "<#8A8A8A> - <accent><lobby></accent> <info><state> · <players> joueur(s) · port <port> · <version>"
+  up-to-date: "<success>à jour"
+  outdated: "<error>ancienne version"
+  status: "<info>Orchestrateur <accent><mode></accent> (prêt : <ready>) · <minimum> à <maximum> lobbys de <capacity> joueurs · version : <accent><version>"
+
 announce:
   join: "<#8A8A8A>[<success>+<#8A8A8A>] <info><player>"
   quit: "<#8A8A8A>[<error>-<#8A8A8A>] <info><player>"

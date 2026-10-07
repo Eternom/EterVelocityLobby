@@ -26,3 +26,83 @@ colors:
 # Sur les serveurs Paper, les messages de Minecraft sont coupés par EterLib (vanilla-join-quit-messages: false).
 announce:
   enabled: true
+
+# ============================================================
+#  Orchestrateur : lobbys créés et supprimés automatiquement sur Pterodactyl
+# ============================================================
+#
+#  Modèle, dans plugins/etervelocitylobby/template/ :
+#    lobby.zip           le lobby sans les plugins Eter : monde (sans playerdata, stats, advancements),
+#                        server.properties, eula.txt, bukkit.yml, spigot.yml, config/, plugins/ (VoidGen,
+#                        LuckPerms et sa config)
+#    EterLib-config.yml  ta config d'EterLib habituelle (base, Redis...) avec
+#                        server-name: '%server%' et server-display-name: '%display%'
+#                        Les accès à la base y sont lus aussi par l'orchestrateur (table eterlobby_servers).
+#  Les plugins Eter sont la dernière release GitHub de chacun (liste « plugins »).
+#
+#  SÉCURITÉ : le panel héberge aussi d'autres serveurs. L'orchestrateur ne supprime QUE les serveurs de la table
+#  eterlobby_servers, appartenant à owner-user-id ET portant l'identifiant externe eterlobby:<nom>.
+#  Commence en dry-run : il écrit dans la console ce qu'il ferait, sans rien faire. /eterlobby status | list.
+#  Ne mets jamais ces clés ailleurs que dans ce fichier.
+orchestrator:
+  enabled: false
+  dry-run: true
+
+  panel:
+    # Adresse du panel, en https:// (obligatoire : les clés et les accès à la base y passent).
+    url: 'https://panel.example.com'
+    # Clé Application (ptla_...) : Admin > Application API (serveurs en lecture/écriture ; nœuds, ports,
+    # utilisateurs, nests et œufs en lecture).
+    application-key: ''
+    # Clé Client (ptlc_...) CRÉÉE AVEC LE COMPTE DÉDIÉ aux lobbys : Compte > API Credentials.
+    client-key: ''
+    # Identifiant du compte dédié, propriétaire de tous les lobbys (Admin > Users).
+    owner-user-id: 0
+    # Nœud où créer les lobbys (Admin > Nodes), et ports réservés aux lobbys sur ce nœud (Allocations).
+    node-id: 0
+    ports: 25600-25619
+    # Adresse à laquelle le proxy joint les lobbys ; vide = celle du port dans le panel (alias, sinon IP).
+    connect-host: ''
+    # Œuf Paper (Nests > Minecraft) : nest-id et egg-id.
+    nest-id: 1
+    egg-id: 2
+    # Vides = ceux de l'œuf.
+    docker-image: ''
+    startup: ''
+    # Variables de l'œuf à forcer (les autres prennent leur valeur par défaut).
+    environment:
+      MINECRAFT_VERSION: '26.2'
+      BUILD_NUMBER: latest
+    memory-mb: 4096
+    cpu-percent: 200
+    disk-mb: 10240
+
+  # Jeton GitHub en lecture seule (facultatif mais conseillé : sans lui, 60 appels par heure).
+  github-token: ''
+
+  # Plugins téléchargés depuis la dernière release : "Organisation/Dépôt", ou "Organisation/Dépôt:DébutDuJar"
+  # quand le dépôt publie plusieurs jars (EterTab : le jar Paper).
+  plugins:
+    - Eternom/EterLib
+    - Eternom/EterHub
+    - Eternom/EterChat
+    - Eternom/EterTab:EterTab-Paper
+    - Eternom/EterSync
+    - Eternom/EterEssential
+    - Eternom/EterHome
+    - Eternom/EterReward
+    - Eternom/EterMarket
+    - Eternom/EterEconomy
+
+  lobbies:
+    name-prefix: lobby
+    # Toujours au moins ce nombre de lobbys à jour, jamais plus que maximum (hors remplacement d'une version).
+    minimum: 3
+    maximum: 8
+    # Joueurs par lobby (comme max-players du modèle), et remplissage à partir duquel on en crée un de plus.
+    capacity: 20
+    scale-up-at: 0.7
+    # Un lobby en trop, vide depuis ce temps, est vidé puis supprimé.
+    idle-minutes: 10
+    # Un lobby vidé est supprimé dès qu'il est vide, au plus tard après ce temps (joueurs envoyés ailleurs).
+    drain-timeout-minutes: 30

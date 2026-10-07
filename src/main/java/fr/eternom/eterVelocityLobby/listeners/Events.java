@@ -5,6 +5,7 @@ import fr.eternom.eterVelocityLobby.EterVelocityLobby;
 import fr.eternom.eterVelocityLobby.module.announce.JoinQuitListener;
 import fr.eternom.eterVelocityLobby.module.lobby.LobbyCommand;
 import fr.eternom.eterVelocityLobby.module.lobby.LobbyListener;
+import fr.eternom.eterVelocityLobby.module.orchestrator.OrchestratorCommand;
 
 public class Events {
 
@@ -15,5 +16,9 @@ public class Events {
         }
         CommandManager commands = plugin.proxy().getCommandManager();
         commands.register(commands.metaBuilder("lobby").aliases("hub", "l").plugin(plugin).build(), new LobbyCommand(plugin));
+        if (plugin.orchestrator() != null) {
+            commands.register(commands.metaBuilder("eterlobby").plugin(plugin).build(),
+                    new OrchestratorCommand(plugin.orchestrator(), plugin.messages()));
+        }
     }
 }
