@@ -4,29 +4,33 @@ import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
+import com.velocitypowered.api.plugin.Dependency;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
-import fr.eternom.eterVelocityLobby.core.Config;
-import fr.eternom.eterVelocityLobby.core.Lang;
-import fr.eternom.eterVelocityLobby.helper.Messages;
+import fr.eternom.eterVelocityLib.EterVelocityLib;
+import fr.eternom.eterVelocityLib.core.Config;
+import fr.eternom.eterVelocityLib.helper.Messages;
+import fr.eternom.eterVelocityLib.orchestrator.ServerPool;
 import fr.eternom.eterVelocityLobby.listeners.Events;
 import fr.eternom.eterVelocityLobby.module.lobby.Lobbies;
-import fr.eternom.eterVelocityLobby.module.orchestrator.Orchestrator;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * EterVelocityLobby : les lobbys du réseau, côté proxy. Arrivée sur le lobby le moins rempli, /lobby depuis
  * n'importe quel serveur, renvoi au lobby quand un serveur expulse ou s'arrête, annonce d'arrivée et de départ du
  * réseau. Les lobbys sont la liste « try » de velocity.toml, plus ceux créés sur Pterodactyl par l'orchestrateur
- * (facultatif). Indépendant d'EterLib (qui est pour Paper).
+ * d'EterVelocityLib (famille « eterlobby », facultatif).
  */
-@Plugin(id = "etervelocitylobby", name = "EterVelocityLobby", version = "1.1.6", authors = {"NadTum"},
-        description = "Lobbys du réseau : répartition, /lobby, renvoi au lobby, arrivées et départs")
+@Plugin(id = "etervelocitylobby", name = "EterVelocityLobby", version = "1.2.0", authors = {"NadTum"},
+        description = "Lobbys du réseau : répartition, /lobby, renvoi au lobby, arrivées et départs",
+        dependencies = {@Dependency(id = "etervelocitylib")})
 public final class EterVelocityLobby {
 
     private static final Duration PING_INTERVAL = Duration.ofSeconds(5);
@@ -37,7 +41,7 @@ public final class EterVelocityLobby {
     private Config config;
     private Messages messages;
     private Lobbies lobbies;
-    private Orchestrator orchestrator;
+    private ServerPool orchestrator;
 
     @Inject
     public EterVelocityLobby(ProxyServer proxy, Logger logger, @DataDirectory Path dataDirectory) {
@@ -49,15 +53,17 @@ public final class EterVelocityLobby {
     @Subscribe
     public void onInitialize(ProxyInitializeEvent event) {
         try {
-            config = new Config(dataDirectory);
-            messages = new Messages(new Lang(dataDirectory, config.getString("default-language", "en_us"), logger), config);
+            config = new Config(EterVelocityLobby.class, dataDirectory);
+            messages = EterVelocityLib.get().messages(EterVelocityLobby.class, dataDirectory, logger);
         } catch (IOException | RuntimeException e) {
             // Sans le détail : une erreur YAML recopie la ligne fautive, qui peut être une clé du panel
             logger.error("config.yml ou lang/ illisible (vérifie la syntaxe YAML), EterVelocityLobby désactivé");
             return;
         }
         if (config.getBoolean("orchestrator.enabled", false)) {
-            orchestrator = new Orchestrator(this, config, dataDirectory);
+            // Un joueur d'un lobby supprimé va sur un autre lobby (de la famille, ou de « try »)
+            orchestrator = new ServerPool(this, proxy, logger, config, dataDirectory, "eterlobby",
+                    List.of("eter_servers", "eterhub_lobbies"), except -> Optional.ofNullable(lobbies).flatMap(found -> found.best(except)));
         }
         lobbies = new Lobbies(proxy, orchestrator);
         if (lobbies.names().isEmpty() && orchestrator == null) {
@@ -95,7 +101,7 @@ public final class EterVelocityLobby {
     }
 
     /** null si l'orchestrateur est désactivé (orchestrator.enabled). */
-    public Orchestrator orchestrator() {
+    public ServerPool orchestrator() {
         return orchestrator;
     }
 

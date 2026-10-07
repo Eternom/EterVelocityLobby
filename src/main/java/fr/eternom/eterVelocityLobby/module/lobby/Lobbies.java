@@ -2,7 +2,7 @@ package fr.eternom.eterVelocityLobby.module.lobby;
 
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
-import fr.eternom.eterVelocityLobby.module.orchestrator.Orchestrator;
+import fr.eternom.eterVelocityLib.orchestrator.ServerPool;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -23,11 +23,11 @@ public class Lobbies {
     private static final Duration PING_TIMEOUT = Duration.ofSeconds(3);
 
     private final ProxyServer proxy;
-    private final Orchestrator orchestrator; // null s'il est désactivé
+    private final ServerPool orchestrator; // null s'il est désactivé
     /** Lobbys qui ont répondu au dernier ping. */
     private final Set<String> reachable = ConcurrentHashMap.newKeySet();
 
-    public Lobbies(ProxyServer proxy, Orchestrator orchestrator) {
+    public Lobbies(ProxyServer proxy, ServerPool orchestrator) {
         this.proxy = proxy;
         this.orchestrator = orchestrator;
     }

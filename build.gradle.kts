@@ -6,6 +6,10 @@ repositories {
     // PaperMC : fournit l'API de Velocity
     maven("https://repo.papermc.io/repository/maven-public/")
     mavenCentral()
+    // EterVelocityLib : compilé depuis GitHub
+    maven("https://jitpack.io")
+    // Repli : EterVelocityLib publié sur cette machine (`gradlew publishToMavenLocal`), pour tester avant de pousser
+    mavenLocal()
 }
 
 dependencies {
@@ -13,6 +17,8 @@ dependencies {
     compileOnly("com.velocitypowered:velocity-api:4.2.0")
     // Génère velocity-plugin.json à partir de l'annotation @Plugin
     annotationProcessor("com.velocitypowered:velocity-api:4.2.0")
+    // Socle commun du proxy : config, langues, palette, orchestrateur (plugin EterVelocityLib installé sur le proxy)
+    compileOnly("com.github.Eternom:EterVelocityLib:1.0.0")
 }
 
 java {

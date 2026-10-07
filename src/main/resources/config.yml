@@ -8,19 +8,7 @@
 #  serveur qui s'arrête ou l'expulse le renvoie sur un lobby au lieu de le déconnecter.
 #  Les textes sont dans lang/. Toute modification nécessite un redémarrage du proxy.
 
-# Langue utilisée si celle du joueur n'existe pas dans lang/.
-default-language: en_us
-
-# Préfixe des messages : le même que dans EterLib/config.yml (language.prefix), le proxy ne lit pas EterLib.
-prefix: "<gradient:#FF7A00:#FFB347><bold>Core</bold></gradient> <dark_gray>» "
-
-# Palette des messages : à garder identique à EterLib/config.yml (language.colors).
-colors:
-  primary: '#FF7A00'   # titres
-  accent: '#FFA640'    # mots importants
-  info: gray           # texte courant (gris clair)
-  error: '#FF5C5C'
-  success: '#5FD38D'
+# Langue par défaut, préfixe et palette : dans EterVelocityLib/config.yml, communs à tous les plugins du proxy.
 
 # Arrivée et départ du RÉSEAU annoncés une seule fois à tous (pas à chaque changement de serveur).
 # Sur les serveurs Paper, les messages de Minecraft sont coupés par EterLib (vanilla-join-quit-messages: false).
@@ -32,7 +20,7 @@ announce:
 # ============================================================
 #
 #  Modèle, dans plugins/etervelocitylobby/template/ :
-#    lobby.zip (ou lobby.tar.gz, format des archives du panel) : le lobby sans les plugins Eter : monde (sans playerdata, stats, advancements),
+#    template.zip (ou template.tar.gz, format des archives du panel ; lobby.zip accepté) : le lobby sans les plugins Eter : monde (sans playerdata, stats, advancements),
 #                        server.properties, eula.txt, bukkit.yml, spigot.yml, config/, plugins/ (VoidGen,
 #                        LuckPerms et sa config)
 #    EterLib-config.yml  ta config d'EterLib habituelle (base, Redis...) avec
@@ -96,8 +84,11 @@ orchestrator:
     - Eternom/EterMarket
     - Eternom/EterEconomy
 
-  lobbies:
+  # Règles de la famille « eterlobby » (ancien nom de la section : lobbies, encore lu).
+  servers:
     name-prefix: lobby
+    # Nom montré aux joueurs ({n} = numéro du lobby).
+    display-name: 'Lobby {n}'
     # Toujours au moins ce nombre de lobbys à jour, jamais plus que maximum (hors remplacement d'une version).
     minimum: 3
     maximum: 8
@@ -108,3 +99,5 @@ orchestrator:
     idle-minutes: 10
     # Un lobby vidé est supprimé dès qu'il est vide, au plus tard après ce temps (joueurs envoyés ailleurs).
     drain-timeout-minutes: 30
+    # Durée de vie maximale d'un lobby, en heures (0 = sans limite).
+    max-lifetime-hours: 0
