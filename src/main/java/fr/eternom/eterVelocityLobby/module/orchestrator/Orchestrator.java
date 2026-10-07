@@ -493,11 +493,14 @@ public class Orchestrator {
         }
     }
 
-    /** Version voulue : empreinte du modèle + dernière release de chaque plugin ; relue toutes les 10 min ou si le modèle change. */
+    /**
+     * Version voulue : empreinte du modèle (archive ET config d'EterLib) + dernière release de chaque plugin ; relue
+     * toutes les 10 min ou dès qu'un fichier du modèle change. Une version différente = lobbys remplacés.
+     */
     private void refreshVersion() {
         try {
             Path zip = archive();
-            long modified = Files.getLastModifiedTime(zip).toMillis();
+            long modified = Files.getLastModifiedTime(zip).toMillis() + Files.getLastModifiedTime(eterLibTemplate()).toMillis();
             if (version != null && modified == templateModified
                     && System.currentTimeMillis() - versionCheckedAt < VERSION_REFRESH.toMillis()) {
                 return;
@@ -506,7 +509,7 @@ public class Orchestrator {
             for (Plugin source : settings.plugins()) {
                 latest.add(releases.latest(source));
             }
-            StringBuilder next = new StringBuilder(hash(zip));
+            StringBuilder next = new StringBuilder(hash(zip, eterLibTemplate()));
             latest.forEach(release -> next.append(' ').append(release.plugin().assetPrefix()).append('@').append(release.tag()));
             if (!next.toString().equals(version)) {
                 logger.info("Version des lobbys : {}", next);
@@ -590,12 +593,14 @@ public class Orchestrator {
         return template.resolve("EterLib-config.yml");
     }
 
-    private static String hash(Path file) throws IOException, NoSuchAlgorithmException {
+    private static String hash(Path... files) throws IOException, NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        try (InputStream in = Files.newInputStream(file)) {
-            byte[] buffer = new byte[65536];
-            for (int read; (read = in.read(buffer)) > 0; ) {
-                digest.update(buffer, 0, read);
+        byte[] buffer = new byte[65536];
+        for (Path file : files) {
+            try (InputStream in = Files.newInputStream(file)) {
+                for (int read; (read = in.read(buffer)) > 0; ) {
+                    digest.update(buffer, 0, read);
+                }
             }
         }
         return "modele-" + HexFormat.of().formatHex(digest.digest()).substring(0, 8);

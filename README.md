@@ -31,7 +31,7 @@ Lobbys **jetables** créés et supprimés sur Pterodactyl (`module/orchestrator`
   l'installation → envoi du zip, décompression → envoi des jars dans `plugins/` → config d'EterLib → démarrage →
   ajout à Velocity → `ACTIVE` dès qu'il répond. Échec : suppression (sûre).
 - **Règles** (toutes les 30 s, un seul fil) : au moins `minimum` lobbys **à jour** ; un de plus quand ils sont remplis
-  à `scale-up-at` (au plus `maximum`) ; une ancienne version (empreinte du zip + tag de chaque plugin, relue toutes les
+  à `scale-up-at` (au plus `maximum`) ; une ancienne version (empreinte de l'archive et de `EterLib-config.yml` + tag de chaque plugin, relue toutes les
   10 min) est vidée dès que les lobbys à jour suffisent ; un lobby en trop vide depuis `idle-minutes`, ou qui ne répond
   plus depuis 5 min, est vidé. **Vidé** (`DRAINING`) : plus de nouveaux joueurs, supprimé une fois vide ou après
   `drain-timeout-minutes` (joueurs envoyés sur un autre lobby).

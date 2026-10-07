@@ -25,7 +25,7 @@ import java.time.Duration;
  * réseau. Les lobbys sont la liste « try » de velocity.toml, plus ceux créés sur Pterodactyl par l'orchestrateur
  * (facultatif). Indépendant d'EterLib (qui est pour Paper).
  */
-@Plugin(id = "etervelocitylobby", name = "EterVelocityLobby", version = "1.1.3", authors = {"NadTum"},
+@Plugin(id = "etervelocitylobby", name = "EterVelocityLobby", version = "1.1.4", authors = {"NadTum"},
         description = "Lobbys du réseau : répartition, /lobby, renvoi au lobby, arrivées et départs")
 public final class EterVelocityLobby {
 
