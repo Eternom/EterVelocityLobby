@@ -484,8 +484,8 @@ public class Orchestrator {
 
     /** Version voulue : empreinte du modèle + dernière release de chaque plugin ; relue toutes les 10 min ou si le modèle change. */
     private void refreshVersion() {
-        Path zip = archive();
         try {
+            Path zip = archive();
             long modified = Files.getLastModifiedTime(zip).toMillis();
             if (version != null && modified == templateModified
                     && System.currentTimeMillis() - versionCheckedAt < VERSION_REFRESH.toMillis()) {
