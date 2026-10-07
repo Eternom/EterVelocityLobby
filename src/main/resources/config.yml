@@ -1,0 +1,28 @@
+# ============================================================
+#  EterVelocityLobby (proxy) : les lobbys du réseau
+# ============================================================
+#
+#  Les lobbys sont la liste « try » de velocity.toml : rien à répéter ici.
+#  Un joueur qui se connecte arrive sur le lobby le moins rempli parmi ceux qui
+#  répondent ; /lobby (/hub, /l) l'y ramène depuis n'importe quel serveur ; un
+#  serveur qui s'arrête ou l'expulse le renvoie sur un lobby au lieu de le déconnecter.
+#  Les textes sont dans lang/. Toute modification nécessite un redémarrage du proxy.
+
+# Langue utilisée si celle du joueur n'existe pas dans lang/.
+default-language: en_us
+
+# Préfixe des messages : le même que dans EterLib/config.yml (language.prefix), le proxy ne lit pas EterLib.
+prefix: "<gradient:#FF7A00:#FFB347><bold>Core</bold></gradient> <dark_gray>» "
+
+# Palette des messages : à garder identique à EterLib/config.yml (language.colors).
+colors:
+  primary: '#FF7A00'   # titres
+  accent: '#FFA640'    # mots importants
+  info: gray           # texte courant (gris clair)
+  error: '#FF5C5C'
+  success: '#5FD38D'
+
+# Arrivée et départ du RÉSEAU annoncés une seule fois à tous (pas à chaque changement de serveur).
+# Sur les serveurs Paper, les messages de Minecraft sont coupés par EterLib (vanilla-join-quit-messages: false).
+announce:
+  enabled: true

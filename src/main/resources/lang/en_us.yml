@@ -1,0 +1,17 @@
+# EterVelocityLobby (proxy) messages, MiniMessage format: https://docs.advntr.dev/minimessage/format
+# Palette tags (config.yml > colors): <primary> <accent> <info> <error> <success>
+# A missing key falls back to the plugin's built-in text.
+
+command:
+  players-only: "<error>This command can only be used by players."
+
+lobby:
+  sending: "<info>Back to the <accent>lobby</accent>..."
+  already: "<info>You are already in the <accent>lobby</accent>."
+  none: "<error>No lobby available right now, try again in a moment."
+  # Shown when arriving in the lobby after being kicked; <reason> = the reason given by the server.
+  kicked: "<error>You were sent back to the lobby: <reset><reason>"
+
+announce:
+  join: "<#8A8A8A>[<success>+<#8A8A8A>] <info><player>"
+  quit: "<#8A8A8A>[<error>-<#8A8A8A>] <info><player>"
