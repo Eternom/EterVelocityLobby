@@ -32,7 +32,7 @@ announce:
 # ============================================================
 #
 #  Modèle, dans plugins/etervelocitylobby/template/ :
-#    lobby.zip           le lobby sans les plugins Eter : monde (sans playerdata, stats, advancements),
+#    lobby.zip (ou lobby.tar.gz, format des archives du panel) : le lobby sans les plugins Eter : monde (sans playerdata, stats, advancements),
 #                        server.properties, eula.txt, bukkit.yml, spigot.yml, config/, plugins/ (VoidGen,
 #                        LuckPerms et sa config)
 #    EterLib-config.yml  ta config d'EterLib habituelle (base, Redis...) avec

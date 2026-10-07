@@ -38,7 +38,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Lobbys jetables sur Pterodactyl : créés à partir du modèle (template/lobby.zip + dernières releases des plugins +
+ * Lobbys jetables sur Pterodactyl : créés à partir du modèle (template/lobby.zip ou lobby.tar.gz + dernières releases des plugins +
  * template/EterLib-config.yml), ajoutés à Velocity quand ils répondent, vidés puis supprimés quand ils ne servent plus.
  *
  * Règles (toutes les 30 s) : jamais moins de `minimum` lobbys à jour ; un de plus quand ils sont remplis à
@@ -119,9 +119,7 @@ public class Orchestrator {
                         String.valueOf(eterLib.getOrDefault("database.username", "root")),
                         String.valueOf(eterLib.getOrDefault("database.password", "")),
                         jar -> plugin.proxy().getPluginManager().addToClasspath(plugin, jar));
-                if (!Files.exists(template.resolve("lobby.zip"))) {
-                    throw new IOException("modèle absent : " + template.resolve("lobby.zip"));
-                }
+                archive(); // modèle présent ?
                 reconcile();
                 ready = true;
                 logger.info("Orchestrateur des lobbys actif{} : {} à {} lobbys de {} joueurs", settings.dryRun()
@@ -298,9 +296,11 @@ public class Orchestrator {
             TimeUnit.SECONDS.sleep(10);
         }
         String id = row.identifier();
-        panel.upload(id, "/", List.of(template.resolve("lobby.zip")));
-        panel.decompress(id, "lobby.zip");
-        panel.deleteFile(id, "lobby.zip");
+        Path archive = archive();
+        String archiveName = archive.getFileName().toString();
+        panel.upload(id, "/", List.of(archive));
+        panel.decompress(id, archiveName);
+        panel.deleteFile(id, archiveName);
         List<Path> jars = new ArrayList<>();
         for (Release release : versionReleases) {
             jars.add(releases.jar(release));
@@ -484,7 +484,7 @@ public class Orchestrator {
 
     /** Version voulue : empreinte du modèle + dernière release de chaque plugin ; relue toutes les 10 min ou si le modèle change. */
     private void refreshVersion() {
-        Path zip = template.resolve("lobby.zip");
+        Path zip = archive();
         try {
             long modified = Files.getLastModifiedTime(zip).toMillis();
             if (version != null && modified == templateModified
@@ -571,6 +571,17 @@ public class Orchestrator {
         } catch (RuntimeException invalidYaml) {
             throw new IOException("template/EterLib-config.yml illisible (YAML invalide)");
         }
+    }
+
+    /** Le modèle : lobby.zip, ou lobby.tar.gz (format des archives du panel). */
+    private Path archive() throws IOException {
+        for (String name : List.of("lobby.zip", "lobby.tar.gz")) {
+            Path archive = template.resolve(name);
+            if (Files.exists(archive)) {
+                return archive;
+            }
+        }
+        throw new IOException("modèle absent : template/lobby.zip ou template/lobby.tar.gz");
     }
 
     private Path eterLibTemplate() {

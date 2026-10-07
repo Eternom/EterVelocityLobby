@@ -22,7 +22,7 @@ Le contenu des lobbys (protection, menus, double saut...) est dans **EterHub**, 
 Lobbys **jetables** créés et supprimés sur Pterodactyl (`module/orchestrator`), ajoutés à Velocity à chaud
 (`registerServer`) : plus besoin de les mettre dans `try`.
 
-- **Modèle** (`template/`) : `lobby.zip` (monde sans données de joueurs, fichiers du serveur, plugins tiers et leur
+- **Modèle** (`template/`) : `lobby.zip` ou `lobby.tar.gz` (format des archives du panel) (monde sans données de joueurs, fichiers du serveur, plugins tiers et leur
   config) + `EterLib-config.yml` (config d'EterLib avec `%server%` et `%display%`). Les plugins Eter sont la
   **dernière release GitHub** de chacun (`orchestrator.plugins`, jars gardés dans `cache/`).
 - **Création** : ligne `CREATING` en base **avant** le panel (une création interrompue reste retrouvable) → serveur
