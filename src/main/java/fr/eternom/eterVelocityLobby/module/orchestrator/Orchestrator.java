@@ -1,5 +1,6 @@
 package fr.eternom.eterVelocityLobby.module.orchestrator;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.velocitypowered.api.proxy.Player;
@@ -62,9 +63,9 @@ public class Orchestrator {
 
     /** Réglages de config.yml > orchestrator. */
     record Settings(boolean dryRun, String namePrefix, int minimum, int maximum, int capacity, double scaleUpAt,
-                    Duration idle, Duration drainTimeout, int owner, int node, int nest, int egg, String dockerImage,
-                    String startup, Map<String, String> environment, int memory, int cpu, int disk, int portFrom,
-                    int portTo, String connectHost, List<Plugin> plugins) {
+                    Duration idle, Duration drainTimeout, int owner, int nest, int egg, String dockerImage,
+                    String startup, Map<String, String> environment, int memory, int cpu, int disk,
+                    int location, String portRange, String connectHost, List<Plugin> plugins) {
     }
 
     private final EterVelocityLobby plugin;
@@ -252,21 +253,22 @@ public class Orchestrator {
         }
         try {
             String name = nextName();
-            Allocation allocation = freeAllocation();
-            String host = !settings.connectHost().isBlank() ? settings.connectHost()
-                    : allocation.alias() != null && !allocation.alias().isBlank() ? allocation.alias() : allocation.ip();
             if (settings.dryRun()) {
-                dryRun("créerait " + name + " sur " + host + ":" + allocation.port() + " (version " + version + ")");
+                dryRun("créerait " + name + " dans la location " + settings.location() + " (version " + version + ")");
                 return;
             }
-            Row row = new Row(name, null, null, EXTERNAL_PREFIX + name, version, State.CREATING, host, allocation.port(),
-                    System.currentTimeMillis());
+            // Adresse encore inconnue : c'est le panel qui choisit le nœud et le port (déploiement automatique)
+            Row row = new Row(name, null, null, EXTERNAL_PREFIX + name, version, State.CREATING, "", 0, System.currentTimeMillis());
             save(row); // AVANT le panel : une création interrompue reste retrouvable (et supprimable) au redémarrage
-            logger.info("Création du lobby {} ({}:{})...", name, host, allocation.port());
+            logger.info("Création du lobby {}...", name);
             try {
-                Server server = panel.create(serverBody(row, allocation));
-                row = row.withPanel(server.id(), server.identifier());
+                Server server = panel.create(serverBody(row));
+                Allocation allocation = panel.allocationOf(server.id());
+                String host = !settings.connectHost().isBlank() ? settings.connectHost()
+                        : allocation.alias() != null && !allocation.alias().isBlank() ? allocation.alias() : allocation.ip();
+                row = row.withPanel(server.id(), server.identifier(), host, allocation.port());
                 save(row);
+                logger.info("Lobby {} déployé par le panel sur {}:{}", name, host, allocation.port());
                 install(row);
                 register(row);
                 waitReachable(row.name());
@@ -311,7 +313,7 @@ public class Orchestrator {
         panel.power(id, "start");
     }
 
-    private JsonObject serverBody(Row row, Allocation allocation) throws IOException {
+    private JsonObject serverBody(Row row) throws IOException {
         JsonObject egg = panel.egg(settings.nest(), settings.egg());
         JsonObject environment = new JsonObject();
         for (JsonElement variable : egg.getAsJsonObject("relationships").getAsJsonObject("variables").getAsJsonArray("data")) {
@@ -342,9 +344,18 @@ public class Orchestrator {
         features.addProperty("allocations", 0);
         features.addProperty("backups", 0);
         body.add("feature_limits", features);
-        JsonObject allocationBody = new JsonObject();
-        allocationBody.addProperty("default", allocation.id());
-        body.add("allocation", allocationBody);
+        // Déploiement automatique : le panel choisit un nœud de la location et un port libre (dans port-range s'il est réglé)
+        JsonObject deploy = new JsonObject();
+        JsonArray locations = new JsonArray();
+        locations.add(settings.location());
+        deploy.add("locations", locations);
+        deploy.addProperty("dedicated_ip", false);
+        JsonArray portRange = new JsonArray();
+        if (!settings.portRange().isBlank()) {
+            portRange.add(settings.portRange());
+        }
+        deploy.add("port_range", portRange);
+        body.add("deploy", deploy);
         body.addProperty("start_on_completion", false);
         return body;
     }
@@ -469,7 +480,7 @@ public class Orchestrator {
         if (!hasApplicationKey) missing.add("orchestrator.panel.application-key");
         if (!hasClientKey) missing.add("orchestrator.panel.client-key");
         if (settings.owner() <= 0) missing.add("orchestrator.panel.owner-user-id");
-        if (settings.node() <= 0) missing.add("orchestrator.panel.node-id");
+        if (settings.location() <= 0) missing.add("orchestrator.panel.location-id");
         if (settings.plugins().isEmpty()) missing.add("orchestrator.plugins");
         if (!Files.exists(eterLibTemplate())) missing.add("template/EterLib-config.yml");
         if (!missing.isEmpty()) {
@@ -507,15 +518,6 @@ public class Orchestrator {
         } catch (Exception e) {
             logger.warn("Version des lobbys non relue : {}", e.getMessage());
         }
-    }
-
-    private Allocation freeAllocation() throws IOException {
-        return panel.allocations(settings.node()).stream()
-                .filter(a -> !a.assigned() && a.port() >= settings.portFrom() && a.port() <= settings.portTo())
-                .filter(a -> rows.values().stream().noneMatch(row -> row.port() == a.port()))
-                .findFirst()
-                .orElseThrow(() -> new IOException("plus de port libre entre " + settings.portFrom() + " et " + settings.portTo()
-                        + " sur le nœud " + settings.node()));
     }
 
     /** lobby-1, lobby-2... : le plus petit numéro libre. */
@@ -600,8 +602,6 @@ public class Orchestrator {
     }
 
     private static Settings settings(Config config) {
-        String ports = config.getString("orchestrator.panel.ports", "25600-25619");
-        String[] range = ports.split("-");
         Map<String, String> environment = new ConcurrentHashMap<>();
         for (String key : config.getKeys("orchestrator.panel.environment")) {
             environment.put(key, config.getString("orchestrator.panel.environment." + key, ""));
@@ -616,7 +616,6 @@ public class Orchestrator {
                 Duration.ofMinutes(Math.max(1, config.getInt("orchestrator.lobbies.idle-minutes", 10))),
                 Duration.ofMinutes(Math.max(1, config.getInt("orchestrator.lobbies.drain-timeout-minutes", 30))),
                 config.getInt("orchestrator.panel.owner-user-id", 0),
-                config.getInt("orchestrator.panel.node-id", 0),
                 config.getInt("orchestrator.panel.nest-id", 1),
                 config.getInt("orchestrator.panel.egg-id", 2),
                 config.getString("orchestrator.panel.docker-image", ""),
@@ -625,8 +624,8 @@ public class Orchestrator {
                 config.getInt("orchestrator.panel.memory-mb", 4096),
                 config.getInt("orchestrator.panel.cpu-percent", 200),
                 config.getInt("orchestrator.panel.disk-mb", 10240),
-                Integer.parseInt(range[0].trim()),
-                Integer.parseInt(range.length > 1 ? range[1].trim() : range[0].trim()),
+                config.getInt("orchestrator.panel.location-id", 0),
+                config.getString("orchestrator.panel.port-range", "").trim(),
                 config.getString("orchestrator.panel.connect-host", ""),
                 config.getStringList("orchestrator.plugins").stream().map(Plugin::parse).toList());
     }

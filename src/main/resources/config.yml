@@ -51,16 +51,18 @@ orchestrator:
   panel:
     # Adresse du panel, en https:// (obligatoire : les clés et les accès à la base y passent).
     url: 'https://panel.example.com'
-    # Clé Application (ptla_...) : Admin > Application API (serveurs en lecture/écriture ; nœuds, ports,
-    # utilisateurs, nests et œufs en lecture).
+    # Clé Application (ptla_...) : Admin > Application API (serveurs en lecture/écriture ; locations, nœuds,
+    # ports, utilisateurs, nests et œufs en lecture).
     application-key: ''
     # Clé Client (ptlc_...) CRÉÉE AVEC LE COMPTE DÉDIÉ aux lobbys : Compte > API Credentials.
     client-key: ''
     # Identifiant du compte dédié, propriétaire de tous les lobbys (Admin > Users).
     owner-user-id: 0
-    # Nœud où créer les lobbys (Admin > Nodes), et ports réservés aux lobbys sur ce nœud (Allocations).
-    node-id: 0
-    ports: 25600-25619
+    # Location où créer les lobbys (Admin > Locations) : le panel choisit lui-même le nœud et un port libre
+    # (déploiement automatique).
+    location-id: 0
+    # Facultatif : plage de ports où le panel peut choisir, ex : '25600-25700' ; vide = n'importe quel port libre.
+    port-range: ''
     # Adresse à laquelle le proxy joint les lobbys ; vide = celle du port dans le panel (alias, sinon IP).
     connect-host: ''
     # Œuf Paper (Nests > Minecraft) : nest-id et egg-id.

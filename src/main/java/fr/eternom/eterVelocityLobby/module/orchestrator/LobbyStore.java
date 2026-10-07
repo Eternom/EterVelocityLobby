@@ -34,8 +34,9 @@ final class LobbyStore {
             return new Row(name, panelId, identifier, externalId, version, newState, host, port, System.currentTimeMillis());
         }
 
-        Row withPanel(int id, String newIdentifier) {
-            return new Row(name, id, newIdentifier, externalId, version, state, host, port, stateSince);
+        /** Créé par le panel : son identifiant, et l'adresse où il l'a déployé. */
+        Row withPanel(int id, String newIdentifier, String newHost, int newPort) {
+            return new Row(name, id, newIdentifier, externalId, version, state, newHost, newPort, stateSince);
         }
     }
 

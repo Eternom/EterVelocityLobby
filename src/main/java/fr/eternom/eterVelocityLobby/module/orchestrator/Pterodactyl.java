@@ -23,13 +23,13 @@ import java.util.UUID;
 
 /**
  * Appels au panel Pterodactyl. Deux clés :
- * - Application (ptla_) : créer, lire, supprimer des serveurs, lire les ports d'un nœud et l'œuf ;
+ * - Application (ptla_) : créer (déploiement automatique dans une location), lire, supprimer des serveurs, lire l'œuf ;
  * - Client (ptlc_, celle de l'utilisateur dédié aux lobbys) : fichiers et démarrage d'un serveur.
  * Bloquant : seulement depuis le fil de l'orchestrateur.
  */
 final class Pterodactyl {
 
-    record Allocation(int id, String ip, String alias, int port, boolean assigned) {
+    record Allocation(int id, String ip, String alias, int port) {
     }
 
     /** status : null = installé et prêt ; "installing", "install_failed", "suspended"... */
@@ -54,21 +54,17 @@ final class Pterodactyl {
 
     // ---------- API Application ----------
 
-    /** Ports du nœud (toutes les pages). */
-    List<Allocation> allocations(int node) throws IOException {
-        List<Allocation> all = new ArrayList<>();
-        for (int page = 1; ; page++) {
-            JsonObject result = application("GET", "/nodes/" + node + "/allocations?per_page=100&page=" + page, null);
-            for (JsonElement element : result.getAsJsonArray("data")) {
-                JsonObject a = element.getAsJsonObject().getAsJsonObject("attributes");
-                all.add(new Allocation(a.get("id").getAsInt(), a.get("ip").getAsString(), text(a, "alias"),
-                        a.get("port").getAsInt(), a.get("assigned").getAsBoolean()));
-            }
-            JsonObject pagination = result.getAsJsonObject("meta").getAsJsonObject("pagination");
-            if (page >= pagination.get("total_pages").getAsInt()) {
-                return all;
+    /** Le port principal d'un serveur (choisi par le panel au déploiement). */
+    Allocation allocationOf(int serverId) throws IOException {
+        JsonObject attributes = application("GET", "/servers/" + serverId + "?include=allocations", null).getAsJsonObject("attributes");
+        int main = attributes.get("allocation").getAsInt();
+        for (JsonElement element : attributes.getAsJsonObject("relationships").getAsJsonObject("allocations").getAsJsonArray("data")) {
+            JsonObject a = element.getAsJsonObject().getAsJsonObject("attributes");
+            if (a.get("id").getAsInt() == main) {
+                return new Allocation(a.get("id").getAsInt(), a.get("ip").getAsString(), text(a, "alias"), a.get("port").getAsInt());
             }
         }
+        throw new IOException("port du serveur " + serverId + " introuvable");
     }
 
     /** L'œuf, avec ses variables (valeurs par défaut des variables d'environnement). */

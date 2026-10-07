@@ -26,7 +26,8 @@ Lobbys **jetables** créés et supprimés sur Pterodactyl (`module/orchestrator`
   config) + `EterLib-config.yml` (config d'EterLib avec `%server%` et `%display%`). Les plugins Eter sont la
   **dernière release GitHub** de chacun (`orchestrator.plugins`, jars gardés dans `cache/`).
 - **Création** : ligne `CREATING` en base **avant** le panel (une création interrompue reste retrouvable) → serveur
-  créé (œuf, port libre de la plage `ports`, propriétaire dédié, identifiant externe `eterlobby:<nom>`) → attente de
+  créé par **déploiement automatique** (`location-id` : le panel choisit le nœud et un port libre, dans
+  `port-range` s'il est réglé ; œuf, propriétaire dédié, identifiant externe `eterlobby:<nom>`) → attente de
   l'installation → envoi du zip, décompression → envoi des jars dans `plugins/` → config d'EterLib → démarrage →
   ajout à Velocity → `ACTIVE` dès qu'il répond. Échec : suppression (sûre).
 - **Règles** (toutes les 30 s, un seul fil) : au moins `minimum` lobbys **à jour** ; un de plus quand ils sont remplis
