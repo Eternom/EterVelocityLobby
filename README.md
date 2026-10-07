@@ -33,7 +33,8 @@ Lobbys **jetables** créés et supprimés sur Pterodactyl (`module/orchestrator`
   création (pas de boucle création/suppression si la base ou le panel sature).
 - **Règles** (toutes les 30 s, un seul fil) : au moins `minimum` lobbys **à jour** ; un de plus quand ils sont remplis
   à `scale-up-at` (au plus `maximum`) ; une ancienne version (empreinte de l'archive et de `EterLib-config.yml` + tag de chaque plugin, relue toutes les
-  10 min) est vidée dès que les lobbys à jour suffisent ; un lobby en trop vide depuis `idle-minutes`, ou qui ne répond
+  10 min) est vidée dès que les lobbys à jour suffisent **pour les joueurs présents** (sans attendre le minimum :
+  elle libère ses connexions à la base, sinon le remplaçant ne pourrait pas naître) ; un lobby en trop vide depuis `idle-minutes`, ou qui ne répond
   plus depuis 5 min, est vidé. **Vidé** (`DRAINING`) : plus de nouveaux joueurs, supprimé une fois vide ou après
   `drain-timeout-minutes` (joueurs envoyés sur un autre lobby).
 - **Sécurité** (le panel héberge aussi les serveurs des clients) :

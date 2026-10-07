@@ -211,18 +211,22 @@ public class Orchestrator {
             active = byState(State.ACTIVE);
             int creating = byState(State.CREATING).size();
             int players = active.stream().mapToInt(row -> players(row.name())).sum();
-            int target = Math.clamp((long) Math.ceil(players / (settings.capacity() * settings.scaleUpAt())),
-                    settings.minimum(), settings.maximum());
+            int forPlayers = Math.max(1, (int) Math.ceil(players / (settings.capacity() * settings.scaleUpAt())));
+            int target = Math.clamp(forPlayers, settings.minimum(), settings.maximum());
             List<Row> upToDate = active.stream().filter(row -> row.version().equals(version)).toList();
 
+            // Une ancienne version est vidée dès que les lobbys à jour suffisent pour les joueurs présents, sans attendre
+            // le minimum : elle libère ses ressources (connexions à la base...), sinon un nouveau lobby peut ne jamais
+            // naître faute de place, et l'ancien ne jamais partir faute de remplaçant.
+            Optional<Row> outdated = active.stream().filter(row -> !row.version().equals(version)).findFirst();
+            if (version != null && outdated.isPresent() && upToDate.size() >= forPlayers) {
+                drain(outdated.get(), "nouvelle version");
+            }
             if (version != null && creating == 0 && now >= createBlockedUntil && upToDate.size() < target && rows.size() < settings.maximum() + settings.minimum()) {
                 create();
             } else if (upToDate.size() >= target) {
-                // Assez de lobbys à jour : on vide une ancienne version, sinon un lobby en trop vide depuis longtemps
-                Optional<Row> outdated = active.stream().filter(row -> !row.version().equals(version)).findFirst();
-                if (outdated.isPresent() && version != null) {
-                    drain(outdated.get(), "nouvelle version");
-                } else if (upToDate.size() > target) {
+                // Assez de lobbys à jour : un lobby en trop, vide depuis longtemps, est vidé
+                if (outdated.isEmpty() && upToDate.size() > target) {
                     upToDate.stream()
                             .filter(row -> now - emptySince.getOrDefault(row.name(), now) >= settings.idle().toMillis())
                             .findFirst()
