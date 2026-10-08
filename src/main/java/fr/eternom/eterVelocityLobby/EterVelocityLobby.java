@@ -28,7 +28,7 @@ import java.util.Optional;
  * réseau. Les lobbys sont la liste « try » de velocity.toml, plus ceux créés sur Pterodactyl par l'orchestrateur
  * d'EterVelocityLib (famille « eterlobby », facultatif).
  */
-@Plugin(id = "etervelocitylobby", name = "EterVelocityLobby", version = "1.2.1", authors = {"NadTum"},
+@Plugin(id = "etervelocitylobby", name = "EterVelocityLobby", version = "1.2.2", authors = {"NadTum"},
         description = "Lobbys du réseau : répartition, /lobby, renvoi au lobby, arrivées et départs",
         dependencies = {@Dependency(id = "etervelocitylib")})
 public final class EterVelocityLobby {
@@ -72,7 +72,7 @@ public final class EterVelocityLobby {
         proxy.getScheduler().buildTask(this, lobbies::ping).repeat(PING_INTERVAL).schedule();
         new Events(this);
         if (orchestrator != null) {
-            orchestrator.start(dataDirectory.resolve("libs"));
+            orchestrator.start();
         }
         logger.info("Lobbys : {}", String.join(", ", lobbies.names()));
     }

@@ -23,9 +23,8 @@ announce:
 #    template.zip (ou template.tar.gz, format des archives du panel ; lobby.zip accepté) : le lobby sans les plugins Eter : monde (sans playerdata, stats, advancements),
 #                        server.properties, eula.txt, bukkit.yml, spigot.yml, config/, plugins/ (VoidGen,
 #                        LuckPerms et sa config)
-#    EterLib-config.yml  ta config d'EterLib habituelle (base, Redis...) avec
-#                        server-name: '%server%' et server-display-name: '%display%'
-#                        Les accès à la base y sont lus aussi par l'orchestrateur (table eterlobby_servers).
+#  La config d'EterLib des lobbys est la seule du proxy : plugins/etervelocitylib/EterLib-config.yml (base, Redis...,
+#  avec server-name: '%server%' et server-display-name: '%display%').
 #  Les plugins Eter sont la dernière release GitHub de chacun (liste « plugins »).
 #
 #  SÉCURITÉ : le panel héberge aussi d'autres serveurs. L'orchestrateur ne supprime QUE les serveurs de la table
