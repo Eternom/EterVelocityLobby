@@ -83,6 +83,7 @@ orchestrator:
     - Eternom/EterReward
     - Eternom/EterMarket
     - Eternom/EterEconomy
+    - Eternom/EterModeration
 
   # Règles de la famille « eterlobby » (ancien nom de la section : lobbies, encore lu).
   servers:
