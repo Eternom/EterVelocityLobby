@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -28,7 +27,7 @@ import java.util.Optional;
  * réseau. Les lobbys sont la liste « try » de velocity.toml, plus ceux créés sur Pterodactyl par l'orchestrateur
  * d'EterVelocityLib (famille « eterlobby », facultatif).
  */
-@Plugin(id = "etervelocitylobby", name = "EterVelocityLobby", version = "1.2.2", authors = {"NadTum"},
+@Plugin(id = "etervelocitylobby", name = "EterVelocityLobby", version = "1.2.3", authors = {"NadTum"},
         description = "Lobbys du réseau : répartition, /lobby, renvoi au lobby, arrivées et départs",
         dependencies = {@Dependency(id = "etervelocitylib")})
 public final class EterVelocityLobby {
@@ -63,7 +62,7 @@ public final class EterVelocityLobby {
         if (config.getBoolean("orchestrator.enabled", false)) {
             // Un joueur d'un lobby supprimé va sur un autre lobby (de la famille, ou de « try »)
             orchestrator = new ServerPool(this, proxy, logger, config, dataDirectory, "eterlobby",
-                    List.of("eter_servers", "eterhub_lobbies"), except -> Optional.ofNullable(lobbies).flatMap(found -> found.best(except)));
+                    except -> Optional.ofNullable(lobbies).flatMap(found -> found.best(except)));
         }
         lobbies = new Lobbies(proxy, orchestrator);
         if (lobbies.names().isEmpty() && orchestrator == null) {
