@@ -10,6 +10,8 @@ Le contenu des lobbys (protection, menus, double saut...) est dans **EterHub**, 
 - **Arrivée sur le réseau** (`PlayerChooseInitialServerEvent`) : le lobby qui répond et a le moins de joueurs.
 - **`/lobby`** (`/hub`, `/l`), pour tous, depuis n'importe quel serveur (même sans plugin dessus) : le meilleur lobby ;
   « déjà au lobby » si on y est.
+  Un serveur Paper peut le demander pour un joueur (canal `eter:lobby`, `LobbyRequests` : le bouton Lobby du `/menu`
+  d'EterEssential) ; seul un serveur peut l'envoyer, pour le joueur qui y est connecté.
 - **Expulsé d'un serveur** (arrêt, plantage, kick) : renvoyé sur un autre lobby avec la raison (`lobby.kicked`), au
   lieu d'être déconnecté. Un `/server` raté alors qu'on est déjà ailleurs reste géré par Velocity (on ne bouge pas).
   Sans lobby joignable : comportement normal de Velocity.

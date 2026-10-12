@@ -21,6 +21,11 @@ public class LobbyCommand implements SimpleCommand {
             plugin.messages().send(invocation.source(), "command.players-only", TagResolver.empty());
             return;
         }
+        send(player);
+    }
+
+    /** Envoie le joueur au lobby le moins rempli (aussi demandé par un serveur Paper : LobbyRequests). */
+    public void send(Player player) {
         String current = player.getCurrentServer().map(ServerConnection::getServerInfo).map(info -> info.getName()).orElse(null);
         if (current != null && plugin.lobbies().isLobby(current)) {
             plugin.messages().send(player, "lobby.already", TagResolver.empty());
