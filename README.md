@@ -15,7 +15,9 @@ Le contenu des lobbys (protection, menus, double saut...) est dans **EterHub**, 
   Sans lobby joignable : comportement normal de Velocity.
 - **Arrivée et départ du réseau** (`announce`) : un seul message à tous, dans la langue de chacun, pas à chaque
   changement de serveur. Les messages de Minecraft sur les serveurs Paper sont coupés par EterLib
-  (`vanilla-join-quit-messages: false`). Un départ n'est annoncé que si l'arrivée l'a été.
+  (`vanilla-join-quit-messages: false`). Un départ n'est annoncé que si l'arrivée l'a été. Le staff invisible
+  (vanish d'EterLib : étiquette `vanished` du canal `eter:tab`, déclaré par EterTab) n'est jamais annoncé ; l'arrivée
+  part 2 s après la connexion, le temps que l'étiquette arrive.
 
 ## Orchestrateur (facultatif, `orchestrator.enabled`)
 
