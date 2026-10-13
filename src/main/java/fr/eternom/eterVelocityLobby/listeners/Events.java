@@ -13,6 +13,7 @@ public class Events {
     public Events(EterVelocityLobby plugin) {
         plugin.proxy().getEventManager().register(plugin, new LobbyListener(plugin));
         if (plugin.config().getBoolean("announce.enabled", true)) {
+            plugin.proxy().getChannelRegistrar().register(JoinQuitListener.TAGS);
             plugin.proxy().getEventManager().register(plugin, new JoinQuitListener(plugin));
         }
         CommandManager commands = plugin.proxy().getCommandManager();
