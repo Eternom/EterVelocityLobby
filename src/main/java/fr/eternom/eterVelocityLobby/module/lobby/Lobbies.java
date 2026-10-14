@@ -52,8 +52,13 @@ public class Lobbies {
 
     /** Lobby qui répond, le moins rempli, autre que except (peut être null). */
     public Optional<RegisteredServer> best(String except) {
+        return best(except == null ? Set.of() : Set.of(except));
+    }
+
+    /** Lobby qui répond, le moins rempli, hors de except. */
+    public Optional<RegisteredServer> best(Set<String> except) {
         return names().stream()
-                .filter(name -> !name.equals(except) && reachable.contains(name))
+                .filter(name -> !except.contains(name) && reachable.contains(name))
                 .map(proxy::getServer)
                 .flatMap(Optional::stream)
                 .min(Comparator.comparingInt(server -> server.getPlayersConnected().size()));

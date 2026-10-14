@@ -80,6 +80,7 @@ orchestrator:
     - Eternom/EterEssential
     - Eternom/EterHome
     - Eternom/EterReward
+    - Eternom/EterKit
     - Eternom/EterMarket
     - Eternom/EterEconomy
     - Eternom/EterModeration
