@@ -81,7 +81,7 @@ orchestrator:
     - Eternom/EterHome
     - Eternom/EterReward
     - Eternom/EterKit
-    - Eternom/EterMarket
+    - Eternom/EterJob
     - Eternom/EterEconomy
     - Eternom/EterModeration
 
